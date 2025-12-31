@@ -1,0 +1,361 @@
+:root {
+    --bg-color: #1a1a2e;
+    --grid-bg: #16213e;
+    --cell-empty: #0f3460;
+    --accent: #e94560;
+    --text-primary: #ffffff;
+    --grid-gap: 4px;
+    --cell-size: 40px;
+    /* Base size, will be responsive */
+    --border-radius: 4px;
+}
+
+* {
+    box-sizing: border-box;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: none;
+    /* Prevent scrolling while dragging */
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    background-color: var(--bg-color);
+    color: var(--text-primary);
+    font-family: 'Outfit', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    overflow: hidden;
+}
+
+#app {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 500px;
+    height: 100vh;
+    padding: 20px;
+}
+
+header {
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.game-title {
+    font-size: 24px;
+    font-weight: 900;
+    margin: 0;
+    line-height: 1;
+}
+
+.game-title .highlight {
+    color: var(--accent);
+}
+
+.score-container {
+    display: flex;
+    gap: 15px;
+}
+
+.score-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 5px 15px;
+    border-radius: 8px;
+    min-width: 80px;
+}
+
+.score-box .label {
+    font-size: 10px;
+    opacity: 0.7;
+    text-transform: uppercase;
+    font-weight: 700;
+}
+
+.score-box .value {
+    font-size: 18px;
+    font-weight: 700;
+}
+
+#game-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    gap: 30px;
+}
+
+.grid-board {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    grid-template-rows: repeat(8, 1fr);
+    gap: var(--grid-gap);
+    background-color: var(--grid-bg);
+    padding: var(--grid-gap);
+    border-radius: 8px;
+    width: 100%;
+    aspect-ratio: 1;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.cell {
+    background-color: var(--cell-empty);
+    border-radius: 3px;
+    width: 100%;
+    height: 100%;
+    transition: background-color 0.1s, transform 0.1s;
+}
+
+.cell.filled {
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2);
+}
+
+.cell.cleared {
+    animation: clearFlash 0.3s ease-out forwards;
+}
+
+@keyframes clearFlash {
+    0% {
+        transform: scale(1);
+        filter: brightness(2);
+    }
+
+    50% {
+        transform: scale(1.2);
+        filter: brightness(3);
+    }
+
+    100% {
+        transform: scale(0);
+        opacity: 0;
+    }
+}
+
+#drag-container {
+    width: 100%;
+    height: 120px;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+}
+
+.piece-container {
+    width: 80px;
+    height: 80px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+/* The actual draggable piece visual */
+.piece-visual {
+    display: grid;
+    gap: 2px;
+    pointer-events: none;
+    /* Let drag events pass through to container or handle manually */
+    transform-origin: center center;
+}
+
+.piece-block {
+    width: 20px;
+    height: 20px;
+    border-radius: 2px;
+    box-shadow: inset 0 0 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Dragging state */
+.piece-visual.dragging {
+    position: fixed;
+    z-index: 1000;
+    pointer-events: none;
+    opacity: 0.9;
+    transform: scale(1.5);
+    /* Make it bigger while dragging like in the real game */
+    filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.3));
+}
+
+/* Ghost/Preview styles could go here */
+.cell.preview {
+    opacity: 0.5;
+}
+
+/* Modal */
+.modal {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+    opacity: 1;
+    transition: opacity 0.3s;
+}
+
+.modal.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.modal-content {
+    background: #16213e;
+    padding: 30px;
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0 0 20px rgba(233, 69, 96, 0.4);
+    border: 2px solid var(--accent);
+    transform: scale(1);
+    animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes popIn {
+    from {
+        transform: scale(0.8);
+        opacity: 0;
+    }
+
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.modal-content h2 {
+    margin: 0 0 10px;
+    color: var(--text-primary);
+    font-size: 32px;
+}
+
+.modal-content p {
+    font-size: 18px;
+    margin-bottom: 25px;
+    color: #aebbdb;
+}
+
+.btn {
+    background: var(--accent);
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    font-size: 18px;
+    font-weight: 700;
+    border-radius: 50px;
+    cursor: pointer;
+    font-family: 'Outfit', sans-serif;
+    transition: transform 0.1s, filter 0.1s;
+}
+
+.btn:hover {
+    filter: brightness(1.1);
+    transform: translateY(-2px);
+}
+
+.btn:active {
+    transform: translateY(0);
+}
+
+.icon-btn {
+    background: linear-gradient(135deg, #e94560, #d63447);
+    color: #fff;
+    border: 2px solid #ff7b92;
+    border-radius: 8px;
+    width: 44px;
+    height: 44px;
+    font-size: 24px;
+    cursor: pointer;
+    margin-right: 10px;
+    transition: all 0.2s;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+.icon-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(233, 69, 96, 0.6);
+    filter: brightness(1.2);
+}
+
+/* Floating Text Animation */
+.floating-text {
+    position: absolute;
+    color: #fff;
+    font-weight: 900;
+    font-size: 24px;
+    pointer-events: none;
+    text-shadow: 0 0 10px rgba(233, 69, 96, 0.8);
+    animation: floatUp 1s ease-out forwards;
+    z-index: 100;
+}
+
+@keyframes floatUp {
+    0% {
+        transform: translateY(0) scale(0.8);
+        opacity: 0;
+    }
+
+    20% {
+        transform: translateY(-20px) scale(1.2);
+        opacity: 1;
+    }
+
+    100% {
+        transform: translateY(-60px) scale(1);
+        opacity: 0;
+    }
+}
+
+.controls-container {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    width: 100%;
+    margin-top: 20px;
+}
+
+.control-btn {
+    background: linear-gradient(145deg, #3357FF, #1e3a8a);
+    border: 3px solid #6b8cff;
+    color: white;
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    font-size: 32px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 6px 15px rgba(51, 87, 255, 0.4);
+    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.control-btn:active {
+    transform: scale(0.9);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+}
+
+.control-btn:hover {
+    border-color: #fff;
+    box-shadow: 0 0 25px rgba(51, 87, 255, 0.7);
+    transform: translateY(-3px) scale(1.05);
+}
